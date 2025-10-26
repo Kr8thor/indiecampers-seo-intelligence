@@ -1,0 +1,128 @@
+{
+  "name": "Authority Collector - Daily Metrics (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "26411ced-6e52-4275-96e2-a543195c73a3",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        112
+      ],
+      "notes": "Runs daily at 08:00 UTC"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM markets WHERE active = true ORDER BY code"
+      },
+      "id": "8a8c253f-8617-4819-a4cb-c29852fb4b9e",
+      "name": "Get Active Markets",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        112
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "9qlaGJt7FI2hbHZA",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Fetches all active markets from Supabase"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3d48abd7-5491-4b45-b67e-a89ff26e9064",
+      "name": "Loop Over Markets",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -224,
+        112
+      ],
+      "notes": "Process each market sequentially"
+    },
+    {
+      "parameters": {
+        "target": "={{ $json.domain }}",
+        "location_code": "={{ $json.location_code }}",
+        "language_name": "={{ $json.language_name }}",
+        "include_serp_info": true,
+        "filters": "search_volume > 0",
+        "order_by": {
+          "values": [
+            {
+              "fieldName": "rank_absolute"
+            }
+          ]
+        },
+        "limit": 1000
+      },
+      "type": "n8n-nodes-dataforseo.dataForSeoLabsApi",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "f724906e-415d-4624-acd4-a8b6d68054b5",
+      "name": "Get Keywords For Site",
+      "credentials": {
+        "dataForSeoApi": {
+          "id": "x466ffQE8hGzrWAP",
+          "name": "DataForSEO account"
+        }
+      },
+      "notes": "Fetch ranked keywords for domain"
+    },
+    {
+      "parameters": {
+        "operation": "get-backlink-summary",
+        "target": "={{ $json.domain }}",
+        "include_subdomains": false,
+        "include_indirect_links": false
+      },
+      "type": "n8n-nodes-dataforseo.dataForSeo",
+      "typeVersion": 1,
+      "position": [
+        32,
+        176
+      ],
+      "id": "c2fc7f49-50b6-4141-a861-eafa2a39fb78",
+      "name": "Get Backlink Summary",
+      "credentials": {
+        "dataForSeoApi": {
+          "id": "x466ffQE8hGzrWAP",
+          "name": "DataForSEO account"
+        }
+      },
+      "notes": "Fetch backlink authority metrics"
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "supabase-v1.0",
+  "tags": [
+    {
+      "id": "SupabaseIntegration",
+      "name": "Supabase"
+    }
+  ]
+}
