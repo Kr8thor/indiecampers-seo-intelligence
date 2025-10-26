@@ -1,0 +1,138 @@
+{
+  "competitor_surge_alert": {
+    "text": "🚨 SEO Alert: Competitor Surge Detected",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚨 Competitor Surge Detected"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {"type": "mrkdwn", "text": "*Market:*\nPortugal (PT)"},
+          {"type": "mrkdwn", "text": "*Device:*\nDesktop"},
+          {"type": "mrkdwn", "text": "*Competitor:*\ncampingcar.pt"},
+          {"type": "mrkdwn", "text": "*Severity:*\n🔴 HIGH"}
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Keyword:* van hire lisbon\n*Change:* â†'️ +12 positions (#8 â→ #3)\n*Volume:* 2,400/mo\n*Est. Traffic Loss:* ~840 visits/mo"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "View Analysis"},
+            "url": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID",
+            "style": "primary"
+          },
+          {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "Check SERP"},
+            "url": "https://www.google.com/search?q=van+hire+lisbon"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "high_value_gaps_alert": {
+    "text": "â¨ New High-Value SEO Opportunities",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "â¨ New High-Value Gaps Found"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {"type": "mrkdwn", "text": "*Market:*\nSpain (ES)"},
+          {"type": "mrkdwn", "text": "*Device:*\nMobile"},
+          {"type": "mrkdwn", "text": "*Count:*\n12 new gaps"},
+          {"type": "mrkdwn", "text": "*Est. Traffic:*\n~4,675/mo"}
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Top Opportunities:*\n1. alquiler autocaravana madrid (Score: 87)\n2. camper van rental spain (Score: 82)\n3. motorhome hire barcelona (Score: 79)"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "View Gaps"},
+            "url": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=GAPS_TAB",
+            "style": "primary"
+          },
+          {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "Content Briefs"},
+            "url": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=BRIEFS_TAB"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "daily_summary_alert": {
+    "text": "â… Daily SEO Intelligence Report",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "â… Daily SEO Report"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {"type": "mrkdwn", "text": "*Date:*\n2025-10-26"},
+          {"type": "mrkdwn", "text": "*Duration:*\n38 minutes"},
+          {"type": "mrkdwn", "text": "*Markets:*\n5 (PT, ES, FR, DE, GB)"},
+          {"type": "mrkdwn", "text": "*Status:*\nâ… Success"}
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Key Metrics:*\nâ€¢ Keywords: 24,500\nâ€¢ Gaps: 3,200\nâ€¢ Clusters: 156\nâ€¢ Briefs: 42"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*API Usage:*\nCalls: 485 | Cost: $15.80 | Monthly Proj: $474"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "View Report"},
+            "url": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID",
+            "style": "primary"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "_comment": "Example configuration for IndieCampers SEO Intelligence Pipeline",
+  "_usage": "Copy values to Global Settings node in n8n workflow",
+  
+  "core_settings": {
+    "TARGET_DOMAIN": "indiecampers.com",
+    "SHEET_ID": "YOUR_GOOGLE_SHEET_ID_HERE",
+    "TAG_PROJECT": "IC-DFSEO-INTEL"
+  },
+  
+  "markets": {
+    "_comment": "DataForSEO location codes: https://dataforseo.com/apis/serp-api/locations",
+    "PT": {"country": "PT", "language": "pt-PT", "location": "Lisbon", "location_code": 2620},
+    "ES": {"country": "ES", "language": "es-ES", "location": "Madrid", "location_code": 2724},
+    "FR": {"country": "FR", "language": "fr-FR", "location": "Paris", "location_code": 2250},
+    "DE": {"country": "DE", "language": "de-DE", "location": "Berlin", "location_code": 2276},
+    "GB": {"country": "GB", "language": "en-GB", "location": "London", "location_code": 2826},
+    "US": {"country": "US", "language": "en-US", "location": "United States", "location_code": 2840},
+    "IT": {"country": "IT", "language": "it-IT", "location": "Rome", "location_code": 2380},
+    "NL": {"country": "NL", "language": "nl-NL", "location": "Amsterdam", "location_code": 2528}
+  },
+  
+  "device_types": ["desktop", "mobile"],
+  
+  "competitor_discovery": {
+    "MAX_COMPETITORS_PER_MARKET": 20,
+    "_comment_max": "Reduce to 10 for faster/cheaper runs",
+    "TOP_KEYWORDS_PER_DOMAIN": 1000,
+    "_comment_keywords": "Reduce to 500 for cost optimization"
+  },
+  
+  "filtering_thresholds": {
+    "RANK_THRESHOLD": 20,
+    "_comment_rank": "Only keywords where competitor ranks ≤ this value",
+    "KD_MAX": 45,
+    "_comment_kd": "Maximum keyword difficulty to consider",
+    "MIN_VOL": 80,
+    "_comment_vol": "Minimum monthly search volume",
+    "CLICK_POTENTIAL_MIN": 0.35,
+    "_comment_click": "Minimum estimated CTR"
+  },
+  
+  "serp_features": {
+    "_comment": "SERP features to prioritize (boost OpportunityScore)",
+    "include": [
+      "featured_snippet",
+      "faqs",
+      "maps",
+      "sitelinks",
+      "video",
+      "people_also_ask",
+      "local_pack",
+      "top_stories"
+    ]
+  },
+  
+  "monitoring": {
+    "REFRESH_WINDOW_DAYS": 14,
+    "_comment_refresh": "Look back N days for trend analysis",
+    "ALERT_SURGE_DELTA": 10,
+    "_comment_surge": "Position change threshold for alerts"
+  },
+  
+  "opportunity_scoring": {
+    "_comment": "Weights must sum to ~1.0",
+    "WEIGHTS": {
+      "w1_volume": 0.35,
+      "_comment_w1": "Search volume importance",
+      "w2_click_potential": 0.25,
+      "_comment_w2": "CTR potential importance",
+      "w3_serp_features": 0.15,
+      "_comment_w3": "SERP feature boost weight",
+      "w4_keyword_difficulty": 0.15,
+      "_comment_w4": "Inverse KD (easier = better)",
+      "w5_commercial_intent": 0.10,
+      "_comment_w5": "Transactional value",
+      "w6_competitor_strength": 0.20,
+      "_comment_w6": "Authority penalty (subtract)"
+    }
+  },
+  
+  "rate_limiting": {
+    "calls_per_hour": 2000,
+    "_comment_calls": "DataForSEO default limit",
+    "backoff_initial_ms": 1000,
+    "_comment_initial": "Start with 1 second delay",
+    "backoff_multiplier": 2,
+    "_comment_multiplier": "Double delay each retry",
+    "max_retries": 3,
+    "_comment_retries": "Give up after 3 attempts"
+  },
+  
+  "testing_config": {
+    "_comment": "Use for dry runs to reduce cost",
+    "dry_run": {
+      "MARKETS": [{"country": "PT", "language": "pt-PT", "location": "Lisbon", "location_code": 2620}],
+      "DEVICE_TYPES": ["desktop"],
+      "MAX_COMPETITORS_PER_MARKET": 5,
+      "TOP_KEYWORDS_PER_DOMAIN": 200
+    },
+    "expected_cost": "~$1.50 per dry run",
+    "expected_duration": "3-5 minutes"
+  },
+  
+  "production_config": {
+    "_comment": "Full production settings",
+    "schedule": "0 7 * * *",
+    "_comment_schedule": "Daily at 07:00 UTC",
+    "expected_cost_daily": "$15-20 USD",
+    "expected_cost_monthly": "$450-600 USD",
+    "expected_duration": "30-45 minutes"
+  }
+}
