@@ -1,0 +1,12 @@
+{
+  "name": "IndieCampers SEO Intelligence Pipeline - COMPLETE",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// GLOBAL WORKFLOW SETTINGS - CONFIGURE HERE\n// ═══════════════════════════════════════════════════════════\n\nconst settings = {\n  TARGET_DOMAIN: \"indiecampers.com\",\n  \n  MARKETS: [\n    {\"country\":\"PT\",\"language\":\"pt-PT\",\"location\":\"Lisbon\",\"location_code\":2620},\n    {\"country\":\"ES\",\"language\":\"es-ES\",\"location\":\"Madrid\",\"location_code\":2724},\n    {\"country\":\"FR\",\"language\":\"fr-FR\",\"location\":\"Paris\",\"location_code\":2250},\n    {\"country\":\"DE\",\"language\":\"de-DE\",\"location\":\"Berlin\",\"location_code\":2276},\n    {\"country\":\"GB\",\"language\":\"en-GB\",\"location\":\"London\",\"location_code\":2826}\n  ],\n  \n  DEVICE_TYPES: [\"desktop\", \"mobile\"],\n  MAX_COMPETITORS_PER_MARKET: 20,\n  TOP_KEYWORDS_PER_DOMAIN: 1000,\n  RANK_THRESHOLD: 20,\n  KD_MAX: 45,\n  MIN_VOL: 80,\n  CLICK_POTENTIAL_MIN: 0.35,\n  SERP_FEATURES_INCLUDE: [\"featured_snippet\",\"faqs\",\"maps\",\"sitelinks\",\"video\",\"people_also_ask\"],\n  REFRESH_WINDOW_DAYS: 14,\n  ALERT_SURGE_DELTA: 10,\n  SHEET_ID: \"YOUR_GOOGLE_SHEET_ID\",\n  TAG_PROJECT: \"IC-DFSEO-INTEL\",\n  \n  WEIGHTS: {\n    w1_volume: 0.35,\n    w2_click_potential: 0.25,\n    w3_serp_features: 0.15,\n    w4_keyword_difficulty: 0.15,\n    w5_commercial_intent: 0.10,\n    w6_competitor_strength: 0.20\n  },\n  \n  RATE_LIMIT: {\n    calls_per_hour: 2000,\n    backoff_initial_ms: 1000,\n    backoff_multiplier: 2,\n    max_retries: 3\n  }\n};\n\nif (!settings.SHEET_ID || settings.SHEET_ID === \"YOUR_GOOGLE_SHEET_ID\") {\n  throw new Error(\"⚠️ SHEET_ID not configured!\");\n}\n\nreturn [{ json: { settings } }];"
+      },
+      "id": "node-001",
+      "name": "🔧 Global Settings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1000, 400]\n    }
