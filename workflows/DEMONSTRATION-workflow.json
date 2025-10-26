@@ -1,0 +1,17 @@
+{
+  "name": "IndieCampers SEO Intelligence - DEMONSTRATION",
+  "meta": {
+    "instanceId": "indiecampers-seo-demo",
+    "description": "Comprehensive demonstration of all 8 phases with proper DataForSEO nodes"
+  },
+  "nodes": [],
+  "connections": {},
+  "active": false,
+  "settings": {"executionOrder": "v1"},
+  "versionId": "1.0.0",
+  "tags": [
+    {"id": "seo", "name": "SEO"},
+    {"id": "dataforseo", "name": "DataForSEO"},
+    {"id": "production", "name": "Production"}
+  ]
+}
