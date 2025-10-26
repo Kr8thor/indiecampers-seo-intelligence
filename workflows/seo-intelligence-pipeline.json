@@ -1,0 +1,158 @@
+{
+  "name": "IndieCampers SEO Intelligence Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// GLOBAL WORKFLOW SETTINGS\n// ═══════════════════════════════════════════════════════════\n// Configure all parameters here, then reference throughout workflow\n\nconst settings = {\n  // Core Settings\n  TARGET_DOMAIN: \"indiecampers.com\",\n  \n  // Markets Configuration (DataForSEO location codes)\n  MARKETS: [\n    {\"country\":\"PT\",\"language\":\"pt-PT\",\"location\":\"Lisbon\",\"location_code\":2620},\n    {\"country\":\"ES\",\"language\":\"es-ES\",\"location\":\"Madrid\",\"location_code\":2724},\n    {\"country\":\"FR\",\"language\":\"fr-FR\",\"location\":\"Paris\",\"location_code\":2250},\n    {\"country\":\"DE\",\"language\":\"de-DE\",\"location\":\"Berlin\",\"location_code\":2276},\n    {\"country\":\"GB\",\"language\":\"en-GB\",\"location\":\"London\",\"location_code\":2826}\n  ],\n  \n  // Device Types\n  DEVICE_TYPES: [\"desktop\", \"mobile\"],\n  \n  // Competitor Discovery\n  MAX_COMPETITORS_PER_MARKET: 20,\n  TOP_KEYWORDS_PER_DOMAIN: 1000,\n  \n  // Filtering Thresholds\n  RANK_THRESHOLD: 20,         // Only consider keywords where competitor ranks ≤ 20\n  KD_MAX: 45,                 // Max keyword difficulty\n  MIN_VOL: 80,                // Min monthly search volume\n  CLICK_POTENTIAL_MIN: 0.35,  // Min CTR potential\n  \n  // SERP Features to Prioritize\n  SERP_FEATURES_INCLUDE: [\n    \"featured_snippet\",\n    \"faqs\",\n    \"maps\",\n    \"sitelinks\",\n    \"video\",\n    \"people_also_ask\"\n  ],\n  \n  // Monitoring\n  REFRESH_WINDOW_DAYS: 14,\n  ALERT_SURGE_DELTA: 10,  // Position change threshold for alerts\n  \n  // Output Configuration\n  SHEET_ID: \"YOUR_GOOGLE_SHEET_ID_HERE\",  // Replace with your Sheet ID\n  TAG_PROJECT: \"IC-DFSEO-INTEL\",\n  \n  // Opportunity Score Weights (must sum to ~1.0)\n  WEIGHTS: {\n    w1_volume: 0.35,              // Search volume importance\n    w2_click_potential: 0.25,      // CTR potential importance\n    w3_serp_features: 0.15,        // SERP feature boost\n    w4_keyword_difficulty: 0.15,   // Inverse KD weight (easier = better)\n    w5_commercial_intent: 0.10,    // Transactional value\n    w6_competitor_strength: 0.20   // Authority penalty\n  },\n  \n  // Rate Limiting\n  RATE_LIMIT: {\n    calls_per_hour: 2000,\n    backoff_initial_ms: 1000,\n    backoff_multiplier: 2,\n    max_retries: 3\n  }\n};\n\n// Validate settings\nif (!settings.SHEET_ID || settings.SHEET_ID === \"YOUR_GOOGLE_SHEET_ID_HERE\") {\n  throw new Error(\"⚠️ SHEET_ID not configured! Update Global Settings node.\");\n}\n\nconst weightSum = Object.values(settings.WEIGHTS).reduce((a,b) => a+b, 0);\nif (Math.abs(weightSum - 1.0) > 0.01) {\n  console.warn(`⚠️ Weights sum to ${weightSum.toFixed(2)}, should be ~1.0`);\n}\n\nreturn [{ json: { settings } }];"
+      },
+      "id": "global-settings-001",
+      "name": "Global Settings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-800, 300],
+      "notes": "📋 CONFIGURE ALL PARAMETERS HERE\\nEdit this node to customize markets, thresholds, and outputs"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-002",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-600, 300],
+      "notes": "🕐 Runs daily at 07:00 UTC\\nAdjust cron expression as needed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create all market × device combinations\nconst settings = $node[\"Global Settings\"].json.settings;\nconst combinations = [];\n\nsettings.MARKETS.forEach(market => {\n  settings.DEVICE_TYPES.forEach(device => {\n    combinations.push({\n      ...market,\n      device: device,\n      run_id: `${market.country}_${device}_${Date.now()}`,\n      settings: settings  // Pass settings to all downstream nodes\n    });\n  });\n});\n\nconsole.log(`✅ Prepared ${combinations.length} market×device combinations`);\nreturn combinations.map(c => ({ json: c }));"
+      },
+      "id": "prepare-combinations-003",
+      "name": "Prepare Market×Device Matrix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 300],
+      "notes": "🔀 Creates all market/device combinations\\nPT_desktop, PT_mobile, ES_desktop, etc."
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "loop-markets-004",
+      "name": "Loop Over Markets",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-200, 300],
+      "notes": "🔁 Process one market×device at a time\\nPrevents rate limit issues"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "target": "={{ $node[\"Global Settings\"].json.settings.TARGET_DOMAIN }}",
+        "location_name": "={{ $json.location }}",
+        "language_name": "={{ $json.language }}",
+        "filters": "search_volume > {{ $json.settings.MIN_VOL }}",
+        "order_by": {
+          "values": [
+            {
+              "fieldName": "rank_absolute",
+              "direction": "asc"
+            }
+          ]
+        },
+        "limit": "={{ $json.settings.TOP_KEYWORDS_PER_DOMAIN }}",
+        "options": {\n          \"include_serp_info\": true\n        }
+      },
+      "id": "target-keywords-005",
+      "name": "📊 Get Target Keywords",
+      "type": "n8n-nodes-dataforseo.dataForSeoLabsApi",
+      "typeVersion": 1,
+      "position": [0, 200],
+      "credentials": {
+        "dataForSeoApi": {
+          "id": \"DATAFORSEO_CREDENTIAL_ID\",
+          "name": \"DataForSEO API\"
+        }
+      },
+      "notes": "DataForSEO Labs: Keywords for Site\\nGet all ranked keywords for target domain"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Global Settings": {
+      "main": [
+        [
+          {
+            "node": "Schedule Trigger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Market×Device Matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Market×Device Matrix": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Markets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Markets": {
+      "main": [
+        [
+          {
+            "node": "📊 Get Target Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "indiecampers-seo-intelligence"
+  },
+  "id": "indiecampers-seo-pipeline",
+  "tags": [
+    {
+      "id": "seo-intelligence",
+      "name": "SEO Intelligence"
+    },
+    {
+      "id": "dataforseo",
+      "name": "DataForSEO"
+    },
+    {
+      "id": "production",
+      "name": "Production"
+    }
+  ]
+}
