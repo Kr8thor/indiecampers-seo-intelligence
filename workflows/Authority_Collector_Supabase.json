@@ -111,16 +111,382 @@
         }
       },
       "notes": "Fetch backlink authority metrics"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and combine metrics from both DataForSEO responses\nconst keywordsData = $input.item(0).json;\nconst backlinksData = $input.item(1).json;\nconst marketInfo = $('Loop Over Markets').item.json;\n\n// Parse keywords response\nlet keywordsMetrics = {\n  total_keywords: 0,\n  keywords_top_1: 0,\n  keywords_top_3: 0,\n  keywords_top_10: 0,\n  keywords_top_20: 0,\n  keywords_top_30: 0,\n  average_ranking: 0,\n  estimated_traffic: 0\n};\n\nif (keywordsData?.tasks?.[0]?.result?.[0]?.items) {\n  const items = keywordsData.tasks[0].result[0].items;\n  let totalRank = 0;\n  \n  items.forEach(item => {\n    const rank = item.ranked_serp_element?.serp_item?.rank_absolute;\n    if (rank) {\n      keywordsMetrics.total_keywords++;\n      totalRank += rank;\n      \n      if (rank === 1) keywordsMetrics.keywords_top_1++;\n      if (rank <= 3) keywordsMetrics.keywords_top_3++;\n      if (rank <= 10) keywordsMetrics.keywords_top_10++;\n      if (rank <= 20) keywordsMetrics.keywords_top_20++;\n      if (rank <= 30) keywordsMetrics.keywords_top_30++;\n      \n      // Estimate traffic (simplified CTR model)\n      const searchVolume = item.keyword_data?.keyword_info?.search_volume || 0;\n      const ctr = rank <= 3 ? 0.15 : (rank <= 10 ? 0.05 : 0.01);\n      keywordsMetrics.estimated_traffic += searchVolume * ctr;\n    }\n  });\n  \n  if (keywordsMetrics.total_keywords > 0) {\n    keywordsMetrics.average_ranking = totalRank / keywordsMetrics.total_keywords;\n  }\n}\n\n// Parse backlinks response\nlet backlinksMetrics = {\n  domain_rating: 0,\n  total_backlinks: 0,\n  referring_domains: 0,\n  dofollow_backlinks: 0\n};\n\nif (backlinksData?.tasks?.[0]?.result?.[0]) {\n  const result = backlinksData.tasks[0].result[0];\n  backlinksMetrics.domain_rating = result.rank || 0;\n  backlinksMetrics.total_backlinks = result.backlinks || 0;\n  backlinksMetrics.referring_domains = result.referring_domains || 0;\n  backlinksMetrics.dofollow_backlinks = result.referring_links_dofollow || 0;\n}\n\n// Calculate costs\nconst keywordsCost = keywordsData?.tasks?.[0]?.cost || 0;\nconst backlinksCost = backlinksData?.tasks?.[0]?.cost || 0;\n\n// Return data formatted for Supabase schema\nreturn {\n  json: {\n    // Market reference (will be converted to UUID in next node)\n    market_id: marketInfo.id,\n    market_code: marketInfo.code,\n    market_name: marketInfo.name,\n    domain: marketInfo.domain,\n    date: new Date().toISOString().split('T')[0],\n    \n    // Authority metrics (matches daily_metrics schema)\n    domain_rating: backlinksMetrics.domain_rating,\n    total_backlinks: backlinksMetrics.total_backlinks,\n    referring_domains: backlinksMetrics.referring_domains,\n    dofollow_backlinks: backlinksMetrics.dofollow_backlinks,\n    \n    // Ranking metrics (matches daily_metrics schema)\n    average_ranking: Number(keywordsMetrics.average_ranking.toFixed(2)),\n    total_ranked_keywords: keywordsMetrics.total_keywords,\n    keywords_top_1: keywordsMetrics.keywords_top_1,\n    keywords_top_3: keywordsMetrics.keywords_top_3,\n    keywords_top_10: keywordsMetrics.keywords_top_10,\n    keywords_top_20: keywordsMetrics.keywords_top_20,\n    keywords_top_30: keywordsMetrics.keywords_top_30,\n    \n    // Traffic metrics (matches daily_metrics schema)\n    estimated_traffic_value: Number(keywordsMetrics.estimated_traffic.toFixed(2)),\n    organic_keywords_count: keywordsMetrics.total_keywords,\n    \n    // Cost tracking (for api_costs table)\n    keywords_api_cost: keywordsCost,\n    backlinks_api_cost: backlinksCost,\n    total_api_cost: keywordsCost + backlinksCost\n  }\n};"
+      },
+      "id": "9fa1d351-c900-4a10-a52e-9e4a103d6cde",
+      "name": "Transform & Calculate Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        112
+      ],
+      "notes": "Parse API responses and calculate SEO metrics"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO daily_metrics (\n  market_id,\n  date,\n  domain_rating,\n  total_backlinks,\n  referring_domains,\n  dofollow_backlinks,\n  average_ranking,\n  total_ranked_keywords,\n  keywords_top_1,\n  keywords_top_3,\n  keywords_top_10,\n  keywords_top_20,\n  keywords_top_30,\n  estimated_traffic_value,\n  organic_keywords_count\n)\nVALUES (\n  '{{ $json.market_id }}',\n  '{{ $json.date }}',\n  {{ $json.domain_rating }},\n  {{ $json.total_backlinks }},\n  {{ $json.referring_domains }},\n  {{ $json.dofollow_backlinks }},\n  {{ $json.average_ranking }},\n  {{ $json.total_ranked_keywords }},\n  {{ $json.keywords_top_1 }},\n  {{ $json.keywords_top_3 }},\n  {{ $json.keywords_top_10 }},\n  {{ $json.keywords_top_20 }},\n  {{ $json.keywords_top_30 }},\n  {{ $json.estimated_traffic_value }},\n  {{ $json.organic_keywords_count }}\n)\nON CONFLICT (market_id, date)\nDO UPDATE SET\n  domain_rating = EXCLUDED.domain_rating,\n  total_backlinks = EXCLUDED.total_backlinks,\n  referring_domains = EXCLUDED.referring_domains,\n  dofollow_backlinks = EXCLUDED.dofollow_backlinks,\n  average_ranking = EXCLUDED.average_ranking,\n  total_ranked_keywords = EXCLUDED.total_ranked_keywords,\n  keywords_top_1 = EXCLUDED.keywords_top_1,\n  keywords_top_3 = EXCLUDED.keywords_top_3,\n  keywords_top_10 = EXCLUDED.keywords_top_10,\n  keywords_top_20 = EXCLUDED.keywords_top_20,\n  keywords_top_30 = EXCLUDED.keywords_top_30,\n  estimated_traffic_value = EXCLUDED.estimated_traffic_value,\n  organic_keywords_count = EXCLUDED.organic_keywords_count,\n  updated_at = NOW()\nRETURNING *;"
+      },
+      "id": "03c11483-c477-4872-8649-85905a57f7d6",
+      "name": "Upsert Daily Metrics",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        544,
+        112
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "9qlaGJt7FI2hbHZA",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Save metrics to Supabase (upsert prevents duplicates)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO api_costs (\n  workflow_name,\n  market_id,\n  operation_type,\n  cost_usd,\n  api_provider,\n  response_metadata\n)\nVALUES\n  ('Authority Collector - Daily Metrics', '{{ $json.market_id }}', 'ranked_keywords', {{ $json.keywords_api_cost }}, 'DataForSEO', '{\"market\": \"{{ $json.market_code }}\"}'),\n  ('Authority Collector - Daily Metrics', '{{ $json.market_id }}', 'backlinks_summary', {{ $json.backlinks_api_cost }}, 'DataForSEO', '{\"market\": \"{{ $json.market_code }}\"}')\nRETURNING *;"
+      },
+      "id": "fe791cc7-779e-4d82-8fca-970372c05b2d",
+      "name": "Log API Costs",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        768,
+        112
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "9qlaGJt7FI2hbHZA",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Track API costs for budget monitoring"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=-- Get today's metrics with previous day for delta calculation\nWITH current_metrics AS (\n  SELECT *\n  FROM daily_metrics\n  WHERE market_id = '{{ $json.market_id }}'\n    AND date = '{{ $json.date }}'\n),\nprevious_metrics AS (\n  SELECT *\n  FROM daily_metrics\n  WHERE market_id = '{{ $json.market_id }}'\n    AND date = (SELECT date - INTERVAL '1 day' FROM current_metrics)\n)\nSELECT\n  c.market_id,\n  c.date,\n  m.code as market_code,\n  m.name as market_name,\n  m.domain,\n  c.domain_rating,\n  c.average_ranking,\n  c.keywords_top_10,\n  -- Calculate deltas\n  COALESCE(c.domain_rating - p.domain_rating, 0) as domain_rating_delta,\n  COALESCE(c.average_ranking - p.average_ranking, 0) as average_ranking_delta\nFROM current_metrics c\nJOIN markets m ON m.id = c.market_id\nLEFT JOIN previous_metrics p ON true;"
+      },
+      "id": "d2ef59d9-574e-4e2c-adc5-cf6778d623be",
+      "name": "Get Metrics With Deltas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        992,
+        112
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "9qlaGJt7FI2hbHZA",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Query current and previous day metrics for anomaly detection"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check for significant changes (anomalies)\nconst current = $input.first().json;\n\nif (!current || !current.domain_rating) {\n  return { json: { has_anomalies: false } };\n}\n\nconst drDelta = current.domain_rating_delta || 0;\nconst rankingDelta = current.average_ranking_delta || 0;\n\n// Define thresholds\nconst thresholds = {\n  domain_rating: {\n    high: 5,    // DR change >= 5 points\n    medium: 3   // DR change >= 3 points\n  },\n  ranking: {\n    high: 3,    // Ranking change >= 3 positions\n    medium: 1.5 // Ranking change >= 1.5 positions\n  }\n};\n\nconst anomalies = [];\n\n// Check Domain Rating anomalies\nif (Math.abs(drDelta) >= thresholds.domain_rating.high) {\n  anomalies.push({\n    metric: 'Domain Rating',\n    change: drDelta,\n    severity: 'HIGH',\n    direction: drDelta > 0 ? '↑' : '↓',\n    message: `Domain Rating ${drDelta > 0 ? 'increased' : 'decreased'} by ${Math.abs(drDelta)} points`\n  });\n} else if (Math.abs(drDelta) >= thresholds.domain_rating.medium) {\n  anomalies.push({\n    metric: 'Domain Rating',\n    change: drDelta,\n    severity: 'MEDIUM',\n    direction: drDelta > 0 ? '↑' : '↓',\n    message: `Domain Rating ${drDelta > 0 ? 'increased' : 'decreased'} by ${Math.abs(drDelta)} points`\n  });\n}\n\n// Check Average Ranking anomalies (note: higher rank = worse position)\nif (Math.abs(rankingDelta) >= thresholds.ranking.high) {\n  anomalies.push({\n    metric: 'Average Ranking',\n    change: rankingDelta,\n    severity: 'HIGH',\n    direction: rankingDelta > 0 ? '↓' : '↑',\n    message: `Average ranking ${rankingDelta > 0 ? 'dropped' : 'improved'} by ${Math.abs(rankingDelta).toFixed(1)} positions`\n  });\n} else if (Math.abs(rankingDelta) >= thresholds.ranking.medium) {\n  anomalies.push({\n    metric: 'Average Ranking',\n    change: rankingDelta,\n    severity: 'MEDIUM',\n    direction: rankingDelta > 0 ? '↓' : '↑',\n    message: `Average ranking ${rankingDelta > 0 ? 'dropped' : 'improved'} by ${Math.abs(rankingDelta).toFixed(1)} positions`\n  });\n}\n\nreturn {\n  json: {\n    has_anomalies: anomalies.length > 0,\n    anomaly_count: anomalies.length,\n    anomalies: anomalies,\n    market_code: current.market_code,\n    market_name: current.market_name,\n    domain: current.domain,\n    date: current.date,\n    current_dr: current.domain_rating,\n    current_ranking: current.average_ranking,\n    keywords_top_10: current.keywords_top_10\n  }\n};"
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Detect Anomalies",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        112
+      ],
+      "notes": "Analyze metric changes and flag anomalies"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.has_anomalies }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "62d91fa8-8981-4012-afb1-d89e3c114d2a",
+      "name": "If Anomalies Detected",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        112
+      ],
+      "notes": "Route to Slack alert if anomalies found"
+    },
+    {
+      "parameters": {
+        "channel": "#seo-alerts",
+        "text": "=🚨 **SEO Alert: Significant Changes Detected**\n\n**Market:** {{ $json.market_name }} ({{ $json.domain }})\n**Date:** {{ $json.date }}\n**Anomalies Found:** {{ $json.anomaly_count }}\n\n{{ $json.anomalies.map(a => `${a.severity === 'HIGH' ? '🔴' : '🟡'} **${a.metric}** ${a.direction} ${a.message}`).join('\\n') }}\n\n**Current Metrics:**\n• Domain Rating: {{ $json.current_dr }}/100\n• Average Ranking: {{ $json.current_ranking }}\n• Keywords in Top 10: {{ $json.keywords_top_10 }}\n\n_View details in Supabase dashboard_",
+        "otherOptions": {}
+      },
+      "id": "d8cad0d8-d33b-49cb-a4b8-b258b07e787e",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        0
+      ],
+      "webhookId": "c4452ee2-d504-42c3-81a0-222a10bbb38d",
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "notes": "Send alert to #seo-alerts channel"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "a0f268a6-8ce3-4b49-8095-20593f35c80e",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1856,
+        144
+      ],
+      "notes": "Continue workflow regardless of alert"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Loop Over Markets').context.noItemsLeft }}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7b0092b8-dd8a-46e5-a092-d0bf25cfdf58",
+      "name": "More Markets?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        208
+      ],
+      "notes": "Check if more markets to process"
     }
   ],
-  "connections": {},
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Active Markets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Markets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Markets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Markets": {
+      "main": [
+        [
+          {
+            "node": "Get Keywords For Site",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Backlink Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Keywords For Site": {
+      "main": [
+        [
+          {
+            "node": "Transform & Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Backlink Summary": {
+      "main": [
+        [
+          {
+            "node": "Transform & Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform & Calculate Metrics": {
+      "main": [
+        [
+          {
+            "node": "Upsert Daily Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Daily Metrics": {
+      "main": [
+        [
+          {
+            "node": "Log API Costs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log API Costs": {
+      "main": [
+        [
+          {
+            "node": "Get Metrics With Deltas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Metrics With Deltas": {
+      "main": [
+        [
+          {
+            "node": "Detect Anomalies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Anomalies": {
+      "main": [
+        [
+          {
+            "node": "If Anomalies Detected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Anomalies Detected": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "More Markets?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Markets?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Markets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
   "versionId": "supabase-v1.0",
+  "meta": {
+    "instanceId": "69b48b7c4c993bcca743b141de0dbea40fe3dacec3176cc839c05748a9b75463"
+  },
+  "id": "Xg5E7idE8EpSeqbq",
   "tags": [
     {
+      "createdAt": "2025-10-25T21:31:09.229Z",
+      "updatedAt": "2025-10-25T21:31:09.229Z",
+      "id": "6bdj2osZ13lGFUeh",
+      "name": "SEO"
+    },
+    {
+      "createdAt": "2025-10-25T21:31:09.225Z",
+      "updatedAt": "2025-10-25T21:31:09.225Z",
+      "id": "WsgcVSCy1R6g8qlu",
+      "name": "DataForSEO"
+    },
+    {
+      "createdAt": "2025-10-25T21:31:09.219Z",
+      "updatedAt": "2025-10-25T21:31:09.219Z",
+      "id": "bQxkRCu56lfNlBFO",
+      "name": "Production"
+    },
+    {
+      "createdAt": "2025-10-26T12:00:00.000Z",
+      "updatedAt": "2025-10-26T12:00:00.000Z",
       "id": "SupabaseIntegration",
       "name": "Supabase"
     }
