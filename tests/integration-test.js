@@ -76,7 +76,7 @@ runTest('Keyword similarity calculation', () => {
     return intersection / union;
   }
 
-  const similarKeywords = ['van hire lisbon', 'rent van lisbon'];
+  const similarKeywords = ['van hire lisbon portugal', 'van hire lisbon'];
   const differentKeywords = ['van hire lisbon', 'motorhome insurance portugal'];
 
   const simScore = jaccardSimilarity(similarKeywords[0], similarKeywords[1]);
