@@ -1,5 +1,16 @@
 # Security Policy
 
+## 🔒 Repository Privacy
+
+**⚠️ CRITICAL:** This repository MUST remain **PRIVATE** at all times.
+
+- Contains proprietary SEO strategies and business intelligence
+- Includes API integration patterns and workflows
+- See [REPOSITORY_PRIVACY.md](REPOSITORY_PRIVACY.md) for complete privacy guidelines
+- **Action:** [Verify repository is private on GitHub](https://github.com/Kr8thor/indiecampers-seo-intelligence/settings)
+
+---
+
 ## Credentials Management
 
 ### ❌ NEVER Do This

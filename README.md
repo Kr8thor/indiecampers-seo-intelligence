@@ -2,6 +2,8 @@
 
 **Production-grade n8n workflow using DataForSEO for automated SEO intelligence, competitor analysis, and content strategy**
 
+> 🔒 **PRIVATE REPOSITORY** - This repository contains proprietary SEO strategies and business intelligence. Ensure repository remains private at all times. See [REPOSITORY_PRIVACY.md](REPOSITORY_PRIVACY.md) for details.
+
 ---
 
 ## 📋 Table of Contents
