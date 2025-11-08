@@ -1,0 +1,144 @@
+name: Bug Report
+description: Report a bug or error in the SEO Intelligence workflows
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below to help us fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: The workflow fails when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Configure workflow with '...'
+        2. Run execution with '...'
+        3. Check output in '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: The workflow should...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Instead, it...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: Which workflow is affected?
+      options:
+        - seo-intelligence-pipeline.json
+        - Authority_Collector_Supabase.json
+        - COMPLETE-seo-intelligence-pipeline.json
+        - DEMONSTRATION-workflow.json
+        - Other/Custom
+    validations:
+      required: true
+
+  - type: input
+    id: n8n-version
+    attributes:
+      label: n8n Version
+      description: What version of n8n are you using?
+      placeholder: "e.g., 0.235.0"
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Type
+      options:
+        - n8n Cloud
+        - Self-hosted (Docker)
+        - Self-hosted (npm)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database/Storage
+      options:
+        - Supabase
+        - Google Sheets
+        - Both
+        - None
+
+  - type: textarea
+    id: error-message
+    attributes:
+      label: Error Message
+      description: Copy and paste any error messages you see
+      render: shell
+      placeholder: |
+        Error: Failed to execute workflow...
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Workflow Configuration
+      description: Relevant settings (remove any sensitive data!)
+      render: json
+      placeholder: |
+        {
+          "MARKETS": ["PT"],
+          "MAX_COMPETITORS_PER_MARKET": 10
+        }
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Execution Logs
+      description: n8n execution logs (if available)
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues for duplicates
+          required: true
+        - label: I have removed all sensitive data (API keys, credentials) from this report
+          required: true
+        - label: I have included error messages and logs
+          required: false
+        - label: I have included steps to reproduce
+          required: true

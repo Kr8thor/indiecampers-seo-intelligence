@@ -1,5 +1,10 @@
 # IndieCampers SEO Intelligence Pipeline
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![n8n](https://img.shields.io/badge/n8n-compatible-orange.svg)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+![Status](https://img.shields.io/badge/status-production--ready-success.svg)
+
 **Production-grade n8n workflow using DataForSEO for automated SEO intelligence, competitor analysis, and content strategy**
 
 > 🔒 **PRIVATE REPOSITORY** - This repository contains proprietary SEO strategies and business intelligence. Ensure repository remains private at all times. See [REPOSITORY_PRIVACY.md](REPOSITORY_PRIVACY.md) for details.
@@ -8,14 +13,30 @@
 
 ## 📋 Table of Contents
 
+### Getting Started
 - [Overview](#overview)
 - [Features](#features)
-- [Architecture](#architecture)
 - [Quick Start](#quick-start)
-- [Setup Guide](#setup-guide)
-- [Google Sheets Schemas](#google-sheets-schemas)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
+- [Which Workflow to Use?](workflows/README.md)
+
+### Documentation
+- [Architecture](docs/ARCHITECTURE.md) 🆕
+- [Setup Guide](docs/SETUP.md)
+- [Testing](docs/TESTING.md)
+- [FAQ](docs/FAQ.md) 🆕
+- [Google Sheets Schemas](docs/GOOGLE_SHEETS_SCHEMAS.md)
+- [Alerts](docs/ALERTS.md)
+
+### Operations
+- [Cost Monitoring](docs/COST_MONITORING.md) 🆕
+- [Security Policy](SECURITY.md)
+- [Repository Privacy](REPOSITORY_PRIVACY.md)
+- [Troubleshooting](docs/TESTING.md#troubleshooting)
+
+### Contributing
+- [Contributing Guide](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 

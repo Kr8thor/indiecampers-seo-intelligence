@@ -7,16 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-11-08
+
 ### Added
-- Project structure improvements (.gitignore, .env.example)
-- Security documentation (SECURITY.md)
-- Workflow validation script
-- CHANGELOG.md for tracking changes
-- CONTRIBUTING.md with contribution guidelines
-- GitHub Actions for automated validation
-- Integration test suite
-- Development setup automation
-- VS Code workspace settings
+- **Documentation:**
+  - Architecture diagrams with Mermaid (docs/ARCHITECTURE.md)
+  - Comprehensive FAQ with 40+ Q&As (docs/FAQ.md)
+  - Cost monitoring guide with SQL queries (docs/COST_MONITORING.md)
+  - Workflows README explaining each workflow (workflows/README.md)
+
+- **Developer Experience:**
+  - GitHub issue templates (bug report, feature request)
+  - Issue template configuration with helpful links
+  - README badges (license, tests, status)
+  - Improved README table of contents
+
+- **Project Infrastructure:**
+  - Complete .gitignore with VS Code settings
+  - .env.example for environment variables
+  - Security documentation (SECURITY.md)
+  - Repository privacy documentation (REPOSITORY_PRIVACY.md)
+  - Workflow validation script (scripts/validate-workflow.js)
+  - Development setup script (scripts/setup-dev.sh)
+  - Integration test suite with 12 tests (tests/integration-test.js)
+  - VS Code workspace settings and extensions
+  - GitHub Actions CI/CD pipeline
+  - CONTRIBUTING.md with detailed guidelines
+  - LICENSE (MIT)
+  - package.json with npm scripts
+
+### Fixed
+- JSON syntax errors in seo-intelligence-pipeline.json
+- GitHub Actions workflow robustness
+- Integration test for Jaccard similarity calculation
+
+### Changed
+- README structure with organized sections
+- Enhanced table of contents with new documentation links
 
 ## [1.1.0] - 2025-11-08
 

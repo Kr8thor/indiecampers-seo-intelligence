@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Question or Discussion
+    url: https://github.com/Kr8thor/indiecampers-seo-intelligence/discussions
+    about: Ask questions or start discussions about the project
+  - name: 📖 Documentation
+    url: https://github.com/Kr8thor/indiecampers-seo-intelligence/tree/main/docs
+    about: Check the documentation for guides and FAQs
+  - name: 🔧 n8n Community
+    url: https://community.n8n.io
+    about: Get help with n8n-specific questions
+  - name: 📊 DataForSEO Support
+    url: https://dataforseo.com/support
+    about: Get help with DataForSEO API questions
