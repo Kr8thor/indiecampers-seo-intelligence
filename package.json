@@ -1,0 +1,46 @@
+{
+  "name": "indiecampers-seo-intelligence",
+  "version": "1.1.0",
+  "description": "Production-grade n8n workflow using DataForSEO for automated SEO intelligence, competitor analysis, and content strategy",
+  "main": "index.js",
+  "scripts": {
+    "validate": "node scripts/validate-workflow.js",
+    "validate:all": "for file in workflows/*.json; do node scripts/validate-workflow.js \"$file\" || exit 1; done",
+    "test": "node tests/integration-test.js",
+    "test:watch": "nodemon tests/integration-test.js",
+    "lint": "eslint workflows/*.json --ext .json",
+    "format": "prettier --write \"**/*.{json,md}\"",
+    "format:check": "prettier --check \"**/*.{json,md}\"",
+    "prepare": "node scripts/setup-dev.sh || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kr8thor/indiecampers-seo-intelligence.git"
+  },
+  "keywords": [
+    "seo",
+    "n8n",
+    "dataforseo",
+    "automation",
+    "competitor-analysis",
+    "keyword-research",
+    "content-strategy",
+    "supabase",
+    "workflow"
+  ],
+  "author": "IndieCampers SEO Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Kr8thor/indiecampers-seo-intelligence/issues"
+  },
+  "homepage": "https://github.com/Kr8thor/indiecampers-seo-intelligence#readme",
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-plugin-json": "^3.1.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

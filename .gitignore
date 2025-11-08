@@ -1,0 +1,53 @@
+# Environment and credentials
+.env
+.env.local
+.env.*.local
+**/credentials.json
+**/service-account-*.json
+
+# n8n specific
+.n8n/
+n8n-data/
+
+# IDE and editor files
+# Allow project-specific VS Code settings, ignore user-specific ones
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*_backup.json
+
+# Test outputs
+test-results/
+coverage/
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/

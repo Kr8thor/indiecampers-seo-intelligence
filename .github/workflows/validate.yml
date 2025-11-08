@@ -1,0 +1,167 @@
+name: Validate Workflows
+
+on:
+  push:
+    branches: [ main, develop, claude/** ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+        else
+          echo "No package.json found, skipping npm install"
+        fi
+
+    - name: Validate JSON syntax
+      run: |
+        echo "🔍 Validating workflow JSON files..."
+        FAILED=0
+        for file in workflows/*.json; do
+          if [ -f "$file" ]; then
+            echo "Validating $file..."
+            if python3 -m json.tool "$file" > /dev/null 2>&1; then
+              echo "✅ $file is valid JSON"
+            else
+              echo "❌ $file has JSON syntax errors"
+              FAILED=1
+            fi
+          fi
+        done
+
+        if [ $FAILED -eq 1 ]; then
+          echo "❌ JSON validation failed"
+          exit 1
+        else
+          echo "✅ All JSON files are valid"
+        fi
+
+    - name: Check for secrets
+      run: |
+        echo "🔍 Checking for hardcoded secrets..."
+        SECRETS_FOUND=0
+
+        # Check for common secret patterns
+        if git diff origin/main --name-only 2>/dev/null | xargs grep -l "sk-\|password.*=.*['\"].\{8,\}\|eyJhbGc" 2>/dev/null; then
+          echo "❌ Possible secrets detected in changed files!"
+          SECRETS_FOUND=1
+        fi
+
+        # Check workflow files specifically
+        for file in workflows/*.json; do
+          if [ -f "$file" ]; then
+            if grep -q "password.*:.*['\"].\{8,\}\|sk-[a-zA-Z0-9]\{20,\}\|eyJhbGc" "$file"; then
+              echo "❌ Possible secrets found in $file"
+              SECRETS_FOUND=1
+            fi
+          fi
+        done
+
+        if [ $SECRETS_FOUND -eq 1 ]; then
+          echo "❌ Security check failed - secrets detected"
+          exit 1
+        else
+          echo "✅ No obvious secrets detected"
+        fi
+
+    - name: Run workflow validation script
+      run: |
+        if [ -f scripts/validate-workflow.js ]; then
+          echo "🔍 Running workflow validation script..."
+          for file in workflows/*.json; do
+            if [ -f "$file" ]; then
+              node scripts/validate-workflow.js "$file" || exit 1
+            fi
+          done
+        else
+          echo "⚠️ Validation script not found, skipping"
+        fi
+
+    - name: Run tests
+      run: |
+        if [ -f tests/integration-test.js ]; then
+          echo "🧪 Running integration tests..."
+          node tests/integration-test.js
+        else
+          echo "⚠️ No tests found, skipping"
+        fi
+
+    - name: Check documentation links
+      run: |
+        echo "🔍 Checking documentation files..."
+
+        # Check that all referenced docs exist
+        MISSING_DOCS=0
+
+        # Check README links
+        if [ -f README.md ]; then
+          for doc in docs/SETUP.md docs/TESTING.md docs/GOOGLE_SHEETS_SCHEMAS.md docs/ALERTS.md; do
+            if grep -q "$doc" README.md; then
+              if [ ! -f "$doc" ]; then
+                echo "❌ Referenced doc not found: $doc"
+                MISSING_DOCS=1
+              else
+                echo "✅ Found: $doc"
+              fi
+            fi
+          done
+        fi
+
+        if [ $MISSING_DOCS -eq 1 ]; then
+          echo "❌ Documentation check failed"
+          exit 1
+        else
+          echo "✅ All referenced documentation exists"
+        fi
+
+    - name: Validate .env.example
+      run: |
+        if [ -f .env.example ]; then
+          echo "✅ .env.example exists"
+
+          # Check for common required variables
+          REQUIRED_VARS=("DATAFORSEO_LOGIN" "DATAFORSEO_PASSWORD" "SUPABASE_URL")
+          MISSING=0
+
+          for var in "${REQUIRED_VARS[@]}"; do
+            if grep -q "$var" .env.example; then
+              echo "✅ $var defined in .env.example"
+            else
+              echo "❌ $var missing from .env.example"
+              MISSING=1
+            fi
+          done
+
+          if [ $MISSING -eq 1 ]; then
+            exit 1
+          fi
+        else
+          echo "⚠️ .env.example not found (recommended)"
+        fi
+
+    - name: Summary
+      if: success()
+      run: |
+        echo ""
+        echo "✅ All validation checks passed!"
+        echo ""
+        echo "Summary:"
+        echo "- JSON syntax: Valid"
+        echo "- Security: No secrets detected"
+        echo "- Workflow validation: Passed"
+        echo "- Documentation: Complete"
+        echo ""
