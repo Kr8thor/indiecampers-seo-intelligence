@@ -69,7 +69,9 @@
           ]
         },
         "limit": "={{ $json.settings.TOP_KEYWORDS_PER_DOMAIN }}",
-        "options": {\n          \"include_serp_info\": true\n        }
+        "options": {
+          "include_serp_info": true
+        }
       },
       "id": "target-keywords-005",
       "name": "📊 Get Target Keywords",
@@ -78,8 +80,8 @@
       "position": [0, 200],
       "credentials": {
         "dataForSeoApi": {
-          "id": \"DATAFORSEO_CREDENTIAL_ID\",
-          "name": \"DataForSEO API\"
+          "id": "DATAFORSEO_CREDENTIAL_ID",
+          "name": "DataForSEO API"
         }
       },
       "notes": "DataForSEO Labs: Keywords for Site\\nGet all ranked keywords for target domain"
